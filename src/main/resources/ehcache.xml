@@ -1,0 +1,32 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+         xsi:noNamespaceSchemaLocation="ehcache.xsd">  
+  
+    <diskStore path="${user.home}/.xagent/cache"/>
+      
+    <defaultCache  
+            maxElementsInMemory="10000"  
+            eternal="false"  
+            timeToIdleSeconds="1200"  
+            timeToLiveSeconds="1200"  
+            overflowToDisk="false"  
+            diskSpoolBufferSizeMB="30"  
+            maxElementsOnDisk="10000000"  
+            diskPersistent="false"  
+            diskExpiryThreadIntervalSeconds="120"  
+            memoryStoreEvictionPolicy="LRU"  
+            />  
+  
+              
+    <cache name="xagentCache"  
+           maxElementsInMemory="36"  
+           maxElementsOnDisk="10000"  
+           eternal="true"  
+           diskPersistent="true"  
+           overflowToDisk="true"  
+           diskSpoolBufferSizeMB="20"  
+           timeToIdleSeconds="3000"  
+           timeToLiveSeconds="6000"  
+           memoryStoreEvictionPolicy="LRU"  
+            />  
+  
+</ehcache>

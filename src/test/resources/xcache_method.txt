@@ -1,0 +1,4 @@
+#com.ebay.platform.xagent.test.common.MyUser.getName
+#com.ebay.platform.xagent.test.common.MyUser2.getName
+
+com.ebay.platform.xagent.test.jdbc.UserDAOImpl.getUser
