@@ -1,13 +1,12 @@
 package com.ebay.platform.xagent;
 
 
-import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.util.List;
 import java.util.Properties;
 
 import com.ebay.platform.xagent.cache.AgentMethod;
-import com.ebay.platform.xagent.cache.transformer.MethodCacheTransformerFactory;
+import com.ebay.platform.xagent.cache.transformer.MethodCacheTransformer;
 import com.ebay.platform.xagent.rmi.AgentRmiServiceImpl;
 import com.ebay.platform.xagent.runtime.RuntimeClassDetect;
 
@@ -52,21 +51,15 @@ public class XAgent
     	Properties cmd = AgentUtils.parseArgs(args);
     	
     	String cacheMethodFile = cmd.getProperty(AgentConstants.ARG_CACHE_FILE, AgentConstants.DEFAULT_XCACHE_METHOD_FILE);
-    	List<AgentMethod> methods = AgentUtils.getCacheMethods(cacheMethodFile);//new ArrayList<Method>();//
-    	ClassFileTransformer classFileTransformer = MethodCacheTransformerFactory.create(methods, isAgentmain);
-    	
-//    	String runtimeDir = cmd.getProperty(AgentConstants.ARG_RUNTIME_DIR, AgentConstants.DEFAULT_RUNTIME_DIR);
-//    	
-//    	List<RuntimeClass> runtimeClasses = AgentUtils.getRuntimeClasses(runtimeDir);
-//    	ClassFileTransformer runtimeClassTransformer = new RuntimeClassTransformer(runtimeClasses);
+    	List<AgentMethod> methods = AgentUtils.getCacheMethods(cacheMethodFile);
+    	MethodCacheTransformer methodCacheTransformer = new MethodCacheTransformer(methods);
     	
     	instrumentation = inst;
-    	instrumentation.addTransformer(classFileTransformer, true);
-    	//instrumentation.addTransformer(runtimeClassTransformer, true);
+    	instrumentation.addTransformer(methodCacheTransformer, true);
     	
     	String rmiPort = cmd.getProperty(AgentConstants.ARG_RMI_PORT);
     	if (rmiPort != null)
-    		new AgentRmiServiceImpl(inst, Integer.valueOf(rmiPort)).start();
+    		new AgentRmiServiceImpl(inst, methodCacheTransformer, Integer.valueOf(rmiPort)).start();
     	
     	new RuntimeClassDetect(cmd, inst).apply();
     	
@@ -75,9 +68,7 @@ public class XAgent
     	
     	for (AgentMethod method : methods)
         	instrumentation.retransformClasses(Class.forName(method.getClassName().replaceAll("/", ".")));
-    	
-//    	for (RuntimeClass runtimeClass : runtimeClasses)
-//    		instrumentation.retransformClasses(Class.forName(runtimeClass.getClassName().replaceAll("/", ".")));
+
     }
 
 }

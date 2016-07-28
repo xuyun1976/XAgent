@@ -8,21 +8,16 @@ import java.util.Properties;
 
 import com.ebay.platform.xagent.AgentConstants;
 import com.ebay.platform.xagent.AgentUtils;
-import com.ebay.platform.xagent.runtime.transformer.RuntimeClassTransformer;
 
 public class RuntimeClassDetect 
 {
 	private Properties args;
 	private Instrumentation inst;
 	
-	private RuntimeClassTransformer runtimeClassTransformer;
-	
 	public RuntimeClassDetect(Properties args, Instrumentation inst)
 	{
 		this.args = args;
 		this.inst = inst;
-		
-		this.runtimeClassTransformer = new RuntimeClassTransformer();
 	}
 	
 	public void apply()
@@ -51,7 +46,7 @@ public class RuntimeClassDetect
 					
 		    		List<RuntimeClass> runtimeClasses = AgentUtils.getRuntimeClasses(runtimeDir);
 					
-		    		runtimeClassTransformer.setRuntimeClasses(runtimeClasses);
+		    		//runtimeClassTransformer.setRuntimeClasses(runtimeClasses);
 		    		
 					for (RuntimeClass runtimeClass : runtimeClasses)
 			    		inst.redefineClasses(new ClassDefinition(Class.forName(runtimeClass.getClassName().replaceAll("/", ".")), runtimeClass.getClassfileBuffer()));

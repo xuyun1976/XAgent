@@ -1,11 +1,17 @@
 package com.ebay.platform.xagent.cache.transformer;
 
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -18,14 +24,77 @@ import com.ebay.platform.xagent.cache.AgentMethod;
 import com.ebay.platform.xagent.cache.AgentMethod.AgentParameter;
 import com.ebay.platform.xagent.cache.CacheManager;
 
-public class MethodCachePremainTransformer extends MethodCacheAbstractTransformer
+public class MethodCacheTransformer implements ClassFileTransformer
 {
-    public MethodCachePremainTransformer(List<AgentMethod> methods) 
-    {
-		super(methods);
+	protected List<AgentMethod> methods = new ArrayList<AgentMethod>();
+
+	public MethodCacheTransformer(List<AgentMethod> methods)
+	{
+		this.methods = methods;
 	}
 
+	public void setMethods(List<AgentMethod> methods) {
+		this.methods = methods;
+	}
+	
+	@SuppressWarnings("rawtypes")
 	@Override
+    public byte[] transform(ClassLoader loader, String className, Class classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException 
+    {
+    	for (AgentMethod method : methods)
+    	{
+    		if (className.equals(method.getClassName()))
+    		{ 
+    			try
+    			{
+	    			ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+	    			ClassReader reader = new ClassReader(classfileBuffer);
+	    			reader.accept(getClassVisitor(cw, className), 0);
+	    			
+	    			if (AgentConstants.ENABLE_DEBUG)
+	    				debugFileOutput(cw, className);
+	    			
+	    			return cw.toByteArray();
+    			}
+    			catch(Exception ex)
+    			{
+    				ex.printStackTrace();
+    				throw new IllegalClassFormatException(ex.toString());
+    			}
+    		}
+    	}
+    	
+        return classfileBuffer;
+    }
+	
+	protected AgentMethod getMethod(String className, String methodName, int access, String desc)
+	{
+		for (AgentMethod method : methods)
+		{
+			 if (method.getClassName().equals(className) && method.getMethodName().equals(methodName)
+				&& !desc.startsWith("()") && !desc.endsWith("V"))
+				 return method.parse(access, desc);
+		}
+		
+		return null;
+	}
+	
+	private void debugFileOutput(ClassWriter cw, String className) throws IOException
+	{
+		byte[] data = cw.toByteArray();
+        
+		File dir = new File(AgentConstants.DEFAULT_DEBUG_DIR);
+		if (!dir.exists())
+			dir.mkdirs();
+		
+		String fileName = className.substring(className.lastIndexOf("/") + 1);
+        FileOutputStream fout = new FileOutputStream(dir +  File.separator + fileName + ".class");
+        fout.write(data);
+        fout.close();
+
+	}
+	
+
 	protected ClassVisitor getClassVisitor(ClassWriter cw, String className) 
 	{
 		return new PremainClassAdapter(Opcodes.ASM4, cw, className);
@@ -516,7 +585,7 @@ public class MethodCachePremainTransformer extends MethodCacheAbstractTransforme
     	String cacheMethodFile = cmd.getProperty(AgentConstants.ARG_CACHE_FILE, AgentConstants.DEFAULT_XCACHE_METHOD_FILE);
     	List<AgentMethod> methods = AgentUtils.getCacheMethods(cacheMethodFile);//new ArrayList<Method>();//
 
-		MethodCachePremainTransformer aa = new MethodCachePremainTransformer(methods);
+		MethodCacheTransformer aa = new MethodCacheTransformer(methods);
 		aa.transform(null, "com/ebay/platform/cache/MyUser1", null, null, null);
 	}
 

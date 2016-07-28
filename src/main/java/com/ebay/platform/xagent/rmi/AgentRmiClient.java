@@ -1,15 +1,19 @@
 package com.ebay.platform.xagent.rmi;
 
 import java.rmi.Naming;
+import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Map;
+
+import com.ebay.platform.xagent.AgentUtils;
 
 public class AgentRmiClient implements AgentRmiService
 {
 	private int rmiPort;
 	
-	public AgentRmiClient(int rmiPort)
+	public AgentRmiClient()
 	{
-		this.rmiPort = rmiPort;
+		assignPort();
 	}
 	
 	public int getRmiPort() {
@@ -19,9 +23,14 @@ public class AgentRmiClient implements AgentRmiService
 	public void setRmiPort(int rmiPort) {
 		this.rmiPort = rmiPort;
 	}
+	
+	public void assignPort()
+	{
+		rmiPort = AgentUtils.getAvailablePort();
+	}
 
 	@Override
-	public List<String> getAllLoadedClasses() 
+	public List<ClassInfo> getAllLoadedClasses() 
 	{
 		int retry = 0;
 		
@@ -30,7 +39,7 @@ public class AgentRmiClient implements AgentRmiService
 			try
 			{
 				AgentRmiService agentRmiService = (AgentRmiService)Naming.lookup("rmi://127.0.0.1:" + rmiPort + "/AgentRmiService");  
-				List<String> classes = agentRmiService.getAllLoadedClasses();
+				List<ClassInfo> classes = agentRmiService.getAllLoadedClasses();
 		        
 				return classes;
 			}
@@ -53,14 +62,14 @@ public class AgentRmiClient implements AgentRmiService
 	}
 
 	@Override
-	public byte[] getClassfileBuffer(String className)
+	public Map<String, byte[]> getClassfileBuffer(String className)
 	{
 		try
 		{
 			AgentRmiService agentRmiService = (AgentRmiService)Naming.lookup("rmi://127.0.0.1:" + rmiPort + "/AgentRmiService");  
-			byte[] buffer = agentRmiService.getClassfileBuffer(className);
+			Map<String, byte[]> classMap = agentRmiService.getClassfileBuffer(className);
 		        
-			return buffer;
+			return classMap;
 		}
 		catch(Exception ex)
 		{
@@ -69,10 +78,43 @@ public class AgentRmiClient implements AgentRmiService
 		
 		return null;
 	}
+
+	@Override
+	public List<MethodInfo> getMethods(String className) throws RemoteException 
+	{
+		try
+		{
+			AgentRmiService agentRmiService = (AgentRmiService)Naming.lookup("rmi://127.0.0.1:" + rmiPort + "/AgentRmiService");  
+			List<MethodInfo> methods = agentRmiService.getMethods(className);
+		        
+			return methods;
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		
+		return null;
+	}
+
+	@Override
+	public void cache(MethodInfo method) throws RemoteException 
+	{
+		try
+		{
+			AgentRmiService agentRmiService = (AgentRmiService)Naming.lookup("rmi://127.0.0.1:" + rmiPort + "/AgentRmiService");  
+			agentRmiService.cache(method);
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
 	
 	public static void main(String[] args)
 	{
-		new AgentRmiClient(6600).getAllLoadedClasses();
+		new AgentRmiClient().getAllLoadedClasses();
 	}
+
 
 }

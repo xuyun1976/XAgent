@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Map;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -15,7 +16,7 @@ import javax.swing.SwingUtilities;
 
 import com.ebay.platform.xagent.AgentUtils;
 import com.ebay.platform.xagent.rmi.AgentRmiClient;
-import com.ebay.platform.xagent.runtime.decompiler.Decompiler;
+import com.ebay.platform.xagent.runtime.decompiler.DecompilerByCFR;
 
 @SuppressWarnings("serial")
 public class ClassEditorTabbedPanel extends JTabbedPane implements ClassSelectedListener
@@ -44,9 +45,9 @@ public class ClassEditorTabbedPanel extends JTabbedPane implements ClassSelected
         add(listScroller, BorderLayout.CENTER);
         addTab(simpleClassName, null, listScroller, className);
         
-        byte[] buffer = agentRmiClient.getClassfileBuffer(className);
+        Map<String, byte[]> classMap = agentRmiClient.getClassfileBuffer(className);
         
-        String java = Decompiler.decompile(buffer);
+        String java = DecompilerByCFR.decompile(classMap);
         
         classTextArea.setText(java);
     }
@@ -56,6 +57,9 @@ public class ClassEditorTabbedPanel extends JTabbedPane implements ClassSelected
 	{
 		int index = className.lastIndexOf(".");
         String simpleClassName = className.substring(index + 1);
+        index = simpleClassName.indexOf("$");
+        if (index != -1)
+        	simpleClassName = simpleClassName.substring(0, index);
         
         index = indexOfTab(simpleClassName);
         

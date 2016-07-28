@@ -16,20 +16,22 @@ import javax.swing.WindowConstants;
 import com.ebay.platform.xagent.AgentConstants;
 import com.ebay.platform.xagent.AgentUtils;
 import com.ebay.platform.xagent.rmi.AgentRmiClient;
+import com.ebay.platform.xagent.rmi.ClassInfo;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 
 @SuppressWarnings("serial")
 public class AgentMainJFrame extends JFrame implements VMSelectedListener
 {
-	private ClassListPanel classListPanel = new ClassListPanel();
+	private ClassListPanel classListPanel;
 	private ConsolePanel consolePanel = new ConsolePanel();
 	private ClassEditorTabbedPanel classEditorTabbedPanel;
 	private AgentRmiClient agentRmiClient;
 	
 	public AgentMainJFrame()
 	{
-		agentRmiClient = createAgentRmiClient();
-		classEditorTabbedPanel = createClassEditorTabbedPanel();
+		agentRmiClient = new AgentRmiClient();
+		classEditorTabbedPanel = new ClassEditorTabbedPanel(agentRmiClient);
+		classListPanel = new ClassListPanel(agentRmiClient);
 		
 		init();
 		addMenu();
@@ -56,17 +58,6 @@ public class AgentMainJFrame extends JFrame implements VMSelectedListener
 
         getContentPane().add(splitHPane);
     }
-	
-	private AgentRmiClient createAgentRmiClient()
-	{
-		int port = AgentUtils.getAvailablePort();
-		return new AgentRmiClient(port);
-	}
-	
-	private ClassEditorTabbedPanel createClassEditorTabbedPanel()
-	{
-		return new ClassEditorTabbedPanel(this.agentRmiClient);
-	}
 	
 	private void addMenu()
 	{
@@ -120,9 +111,10 @@ public class AgentMainJFrame extends JFrame implements VMSelectedListener
 	@Override
 	public void selected(VirtualMachineDescriptor vmd) 
 	{
+		agentRmiClient.assignPort();
 		AgentUtils.attachVM(vmd, AgentConstants.ARG_RMI_PORT + "=" + agentRmiClient.getRmiPort());
 		
-		List<String> classes = agentRmiClient.getAllLoadedClasses();
+		List<ClassInfo> classes = agentRmiClient.getAllLoadedClasses();
 		
 		classListPanel.refreshClassList(classes);
 	}

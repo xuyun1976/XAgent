@@ -43,6 +43,14 @@
 	</dependency>
 	
 	<dependency>
+      <groupId>cfr</groupId>
+      <artifactId>cfr</artifactId>
+	  <version>0.1161</version>
+      <scope>system</scope>
+	  <systemPath>${basedir}/lib/cfr_0_116.jar</systemPath>
+    </dependency>  
+    
+	<dependency>
       <groupId>org.jd</groupId>
       <artifactId>core</artifactId>
 	  <version>0.7.1</version>

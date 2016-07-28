@@ -24,6 +24,7 @@ public final class AgentConstants
 	public static final String DEAFULT_XAGENT_DIR = System.getProperty("user.home") + File.separator + "." + AGNET_NAME;
 	public static final String DEFAULT_DEBUG_DIR = DEAFULT_XAGENT_DIR + File.separator + "debug";
 	public static final String DEFAULT_RUNTIME_DIR = DEAFULT_XAGENT_DIR + File.separator + "runtime";
+	public static final String DEFAULT_TEMP_DIR = DEAFULT_XAGENT_DIR + File.separator + "temp";
 
 	public static final List<String> EXCLUDE_DIRS = Arrays.asList(new String[]{RUNTIME_SUCCESS_DIR, RUNTIME_FAILED_DIR});
 	

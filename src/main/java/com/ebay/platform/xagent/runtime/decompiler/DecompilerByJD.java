@@ -20,7 +20,7 @@ import jd.core.process.deserializer.ClassFileDeserializer;
 import jd.core.process.layouter.ClassFileLayouter;
 import jd.core.process.writer.ClassFileWriter;
 
-public class Decompiler {
+public class DecompilerByJD {
 	private static LoaderManager loaderManager = new LoaderManager();
 	private static CommonPreferences preferences = new CommonPreferences(false, false, true, false, false, false);
 	
@@ -90,7 +90,7 @@ public class Decompiler {
 	public static void main(String[] args)
 	{
 		
-		System.out.println(Decompiler.decompile(new File("C:\\GitHub\\XAgent\\target\\classes\\com\\ebay\\platform\\xagent\\gui\\ClassListPanel.class")));
+		System.out.println(DecompilerByJD.decompile(new File("C:\\GitHub\\XAgent\\target\\classes\\com\\ebay\\platform\\xagent\\gui\\ClassListPanel.class")));
 	}
 
 }
