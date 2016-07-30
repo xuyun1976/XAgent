@@ -109,10 +109,17 @@ public class AgentMainJFrame extends JFrame implements VMSelectedListener
 	}
 
 	@Override
-	public void selected(VirtualMachineDescriptor vmd) 
+	public void selected(VirtualMachineDescriptor vmd, int port) 
 	{
-		agentRmiClient.assignPort();
-		AgentUtils.attachVM(vmd, AgentConstants.ARG_RMI_PORT + "=" + agentRmiClient.getRmiPort());
+		if (port == 0)
+		{
+			agentRmiClient.assignPort();
+			AgentUtils.attachVM(vmd, AgentConstants.ARG_RMI_PORT + "=" + agentRmiClient.getRmiPort());
+		}
+		else
+		{
+			agentRmiClient.setRmiPort(port);
+		}
 		
 		List<ClassInfo> classes = agentRmiClient.getAllLoadedClasses();
 		

@@ -4,20 +4,24 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
-import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
@@ -26,7 +30,7 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 @SuppressWarnings("serial")
 public class JvmAttachDialog extends JDialog 
 {
-	private JComboBox<VM> jvmComboBox;
+	private JTable jvmTable;
 	private VMSelectedListener listener;
 	
 	public JvmAttachDialog(Frame frame) 
@@ -34,13 +38,13 @@ public class JvmAttachDialog extends JDialog
 		super(frame, "Choose JVM", true);
 		
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		setSize(300,400); 
+		setSize(500,300); 
 		centerScreen();
 		
-		addList();
+		addTable();
 		addButtons();
 		
-		pack();
+		//pack();
 	}
 	
 	public void setListener(VMSelectedListener listener) {
@@ -55,30 +59,49 @@ public class JvmAttachDialog extends JDialog
 	    requestFocus();   
 	}
 	
-	private void addList()
+	private void addTable()
 	{
 		JPanel mainPanel = new JPanel();
-		mainPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		mainPanel.setLayout(new GridLayout(2,1));
+		//mainPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+		//mainPanel.setLayout(new GridLayout(2,1));
+		
+		//mainPanel.setSize(300,300);
+		mainPanel.setLayout(new BorderLayout());
+		
 		getContentPane().setLayout(new BorderLayout(5, 5));
 		getContentPane().add(mainPanel, BorderLayout.CENTER);
 		
 		JLabel label = new JLabel("Please Choose a Java Process:");
-		mainPanel.add(label);
+		label.setBorder(new EmptyBorder(10, 5, 10, 5));
+		mainPanel.add(label, BorderLayout.NORTH);
 		
-		DefaultComboBoxModel<VM> model = new DefaultComboBoxModel<VM>();
+		TableVMValue tv = new TableVMValue();
 		List<VirtualMachineDescriptor> vmds = VirtualMachine.list();
 		for (VirtualMachineDescriptor vmd : vmds)
 		{
 			if (vmd.displayName().length() == 0)
 				continue;
 			
-			model.addElement(new VM(vmd));
+			tv.addElement(new VM(vmd)); 
 		}
 		
-		jvmComboBox = new JComboBox<VM>(model);
-	
-		mainPanel.add(jvmComboBox);
+		jvmTable = new JTable(tv);
+		jvmTable.setRowHeight(25);
+		jvmTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		TableColumnModel tcm = jvmTable.getColumnModel();
+		TableColumn firstColumn = tcm.getColumn(0); 
+		firstColumn.setPreferredWidth(50);
+		firstColumn.setMinWidth(50);
+		
+		TableColumn secondColumn = tcm.getColumn(1); 
+		secondColumn.setPreferredWidth(350);
+		secondColumn.setMinWidth(100);
+		
+		JScrollPane scrollPane = new JScrollPane(jvmTable);
+		scrollPane.setSize(400, 250);
+		
+		mainPanel.add(scrollPane);
 	}
 	
 	private void addButtons()
@@ -93,12 +116,13 @@ public class JvmAttachDialog extends JDialog
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
-				JvmAttachDialog.this.dispose();
+				if (selected())
+					JvmAttachDialog.this.dispose();
 				
-				VM vm = (VM)jvmComboBox.getSelectedItem();
-				
-				if (listener != null)
-					listener.selected(vm.getVmd());
+//				//VM vm = (VM)jvmComboBox.getSelectedItem();
+//				
+//				if (listener != null)
+//					listener.selected(vm.getVmd());
 			}
 		});
 		
@@ -119,9 +143,24 @@ public class JvmAttachDialog extends JDialog
 		buttonPane.add(cancelButton);
 	}
 	
+	private boolean selected()
+	{
+		int row = jvmTable.getSelectedRow();
+		
+		if (row == -1 || listener == null)
+			return false;
+		
+		TableVMValue tv = (TableVMValue)jvmTable.getModel();
+		VM vm = tv.getValueAt(row);
+		listener.selected(vm.getVmd(), vm.getPort());
+		
+		return true;
+	}
+	
 	class VM 
 	{
 		private VirtualMachineDescriptor vmd;
+		private int port = 0;
 		
 		public VM(VirtualMachineDescriptor vmd)
 		{
@@ -132,10 +171,95 @@ public class JvmAttachDialog extends JDialog
 			return vmd;
 		}
 
+		public int getPort() {
+			return port;
+		}
+
+		public void setPort(int port) {
+			this.port = port;
+		}
+
+		public String getProcessId()
+		{
+			return vmd.id();
+		}
+		
+		public String getCommand()
+		{
+			return vmd.displayName();
+		}
+		
 		@Override
 		public String toString()
 		{
 			return vmd.displayName() + " " + vmd.id();
 		}
 	}
+	
+	class TableVMValue extends AbstractTableModel
+	{  
+        public String[] columnNames = new String[]{"Process ID", "Command", "Port"};  
+        public List<VM> vms = new ArrayList<VM>();  
+        
+        public void addElement(VM vm) 
+        {
+        	vms.add(vm);
+		}
+		
+        public int getColumnCount() 
+        {  
+            return columnNames.length;  
+        }  
+        
+		public int getRowCount() 
+		{  
+        	return vms.size();  
+        }
+        
+        public VM getValueAt(int row)
+        {
+        	if (row < vms.size())
+        		return vms.get(row);
+        	
+        	return null;
+        }
+        
+        public Object getValueAt(int rowIndex, int col) 
+        {
+        	VM vm = vms.get(rowIndex);
+        	if (col == 0)
+        		return vm.getProcessId();
+        	else if (col == 1)
+        		return vm.getCommand();
+        	else
+                return vm.getPort() == 0 ? "" : vm.getPort();  
+        }
+        
+        public String getColumnName(int col)
+        {  
+        	return columnNames[col];  
+        }
+        
+        public boolean isCellEditable(int row, int col)
+        {
+        	if (col == 2)
+        	   return true;
+        
+        	return false;
+        }
+        
+        public void setValueAt(Object value, int row, int col)
+        { 
+        	try
+        	{
+        		VM vm = vms.get(row);
+        		vm.setPort(Integer.valueOf(value.toString()));
+        	}
+        	catch(Exception ex)
+        	{
+        	}
+        	
+        	this.fireTableCellUpdated(row, col);     
+       }     
+	}  
 }

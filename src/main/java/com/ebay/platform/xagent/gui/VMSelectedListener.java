@@ -4,5 +4,5 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 
 public interface VMSelectedListener 
 {
-	public void selected(VirtualMachineDescriptor vmd);
+	public void selected(VirtualMachineDescriptor vmd, int port);
 }
