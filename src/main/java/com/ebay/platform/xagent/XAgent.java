@@ -51,6 +51,8 @@ public class XAgent
     	Properties cmd = AgentUtils.parseArgs(args);
     	
     	String cacheMethodFile = cmd.getProperty(AgentConstants.ARG_CACHE_FILE, AgentConstants.DEFAULT_XCACHE_METHOD_FILE);
+    	String classpath = cmd.getProperty(AgentConstants.ARG_CLASSPATH);
+    	
     	List<AgentMethod> methods = AgentUtils.getCacheMethods(cacheMethodFile);
     	MethodCacheTransformer methodCacheTransformer = new MethodCacheTransformer(methods);
     	
@@ -61,7 +63,7 @@ public class XAgent
     	if (rmiPort != null)
     		new AgentRmiServiceImpl(inst, methodCacheTransformer, Integer.valueOf(rmiPort)).start();
     	
-    	new RuntimeClassDetect(cmd, inst).apply();
+    	new RuntimeClassDetect(cmd, inst, classpath).apply();
     	
     	if (!isAgentmain)
     		return;

@@ -130,7 +130,7 @@
 		        <archive>
 		          <manifest>
 		            <mainClass>com.ebay.platform.xagent.gui.XAgentGuiLauncher</mainClass>
-		          </manifest>
+		           </manifest>
 		          <manifestEntries>
 			        <Premain-Class>com.ebay.platform.xagent.XAgent</Premain-Class>
 			        <Agent-Class>com.ebay.platform.xagent.XAgent</Agent-Class>

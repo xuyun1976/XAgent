@@ -13,16 +13,18 @@ public class RuntimeClassDetect
 {
 	private Properties args;
 	private Instrumentation inst;
+	private String classpath;
 	
-	public RuntimeClassDetect(Properties args, Instrumentation inst)
+	public RuntimeClassDetect(Properties args, Instrumentation inst, String classpath)
 	{
 		this.args = args;
 		this.inst = inst;
+		this.classpath = classpath;
 	}
 	
 	public void apply()
 	{
-    	DetecteTask detecteTask = new DetecteTask();
+		DetecteTask detecteTask = new DetecteTask();
 		detecteTask.start();
 	}
 	
@@ -44,10 +46,8 @@ public class RuntimeClassDetect
 					if (!runtimeDir.exists())
 						runtimeDir.mkdirs();
 					
-		    		List<RuntimeClass> runtimeClasses = AgentUtils.getRuntimeClasses(runtimeDir);
+		    		List<RuntimeClass> runtimeClasses = AgentUtils.getRuntimeClasses(runtimeDir, classpath);
 					
-		    		//runtimeClassTransformer.setRuntimeClasses(runtimeClasses);
-		    		
 					for (RuntimeClass runtimeClass : runtimeClasses)
 			    		inst.redefineClasses(new ClassDefinition(Class.forName(runtimeClass.getClassName().replaceAll("/", ".")), runtimeClass.getClassfileBuffer()));
 					

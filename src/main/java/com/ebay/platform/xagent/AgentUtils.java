@@ -238,11 +238,11 @@ public class AgentUtils
        }
 	}
 	
-	public static List<RuntimeClass> getRuntimeClasses(File runtimeDir) throws Exception
+	public static List<RuntimeClass> getRuntimeClasses(File runtimeDir, String classpath) throws Exception
 	{
 		List<RuntimeClass> runtimeClasses = new ArrayList<RuntimeClass>();
 		
-		File outputDir = compile(runtimeDir);
+		File outputDir = compile(runtimeDir, classpath);
 		
 		if (outputDir == null)
 			return runtimeClasses;
@@ -303,7 +303,7 @@ public class AgentUtils
 		}
 	}
 	
-	public static File compile(File runtimeDir) throws Exception
+	public static File compile(File runtimeDir, String classpath) throws Exception
 	{
 		List<File> javaFiles = getFilesInDirectory(runtimeDir, new ExtensionFileFilter(".java", AgentConstants.EXCLUDE_DIRS));
 		if (javaFiles.isEmpty())
@@ -317,15 +317,34 @@ public class AgentUtils
 	    	outputDir.mkdirs();
 	    
 	    fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Arrays.asList(outputDir));
+	    fileManager.setLocation(StandardLocation.CLASS_PATH, getJarsInClasspath(classpath));
 	    
 	    List<String> options = new ArrayList<String>();
-	    options.addAll(Arrays.asList("-classpath",System.getProperty("java.class.path")));
-
+	    options.addAll(Arrays.asList("-classpath", System.getProperty("java.class.path")));
+	    
 	    // Compile the file
 	    compiler.getTask(null, fileManager, null, options, null, fileManager.getJavaFileObjectsFromFiles(javaFiles)).call();
 	    fileManager.close();
 	    
 	    return outputDir;
+	}
+	
+	public static List<File> getJarsInClasspath(String classpath) throws Exception
+	{
+		List<File> jars = new ArrayList<File>();
+		
+		if (classpath == null)
+			return jars;
+		
+		String[] paths = classpath.split(",|;");
+		
+		for (String path : paths)
+		{
+			List<File> files = getFilesInDirectory(new File(path), new ExtensionFileFilter(".jar", null));
+			jars.addAll(files);
+		}
+		
+		return jars;
 	}
 	
 	public static int getAvailablePort()
@@ -382,7 +401,9 @@ public class AgentUtils
 		if (!runtimeDir.exists())
 			runtimeDir.mkdirs();
 		
-		List<RuntimeClass> runtimeClasses = getRuntimeClasses(runtimeDir);
+		System.out.println(runtimeDir.getAbsolutePath());
+		
+		List<RuntimeClass> runtimeClasses = getRuntimeClasses(runtimeDir, "C:\\v3app\\core\\shared\\lib");
 		
 		System.out.println(runtimeClasses);
 	}
