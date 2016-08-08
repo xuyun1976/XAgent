@@ -47,6 +47,14 @@ public class CacheManager
 		return value;
 	}
 	
+//	public static <T> T get1(Object key)
+//	{
+//		Object value = cacheAgent.get(key);
+//		
+//		System.out.println(String.format("key=%s, value=%s", key, value));
+//		return value;
+//	}
+	
 	public static void shutdown()
 	{
 		cacheAgent.shutdown();

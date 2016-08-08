@@ -11,10 +11,5 @@ public class CacheAgentFactory
 	{
 		return new EhCacheAgent();
 	}
-	
-	public static CacheAgent createOSCacheAgent()
-	{
-		return new OSCacheAgent();
-	}
 
 }

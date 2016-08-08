@@ -7,6 +7,8 @@ import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
@@ -88,6 +91,17 @@ public class JvmAttachDialog extends JDialog
 		jvmTable = new JTable(tv);
 		jvmTable.setRowHeight(25);
 		jvmTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		jvmTable.addMouseListener(new MouseAdapter()
+			{
+		    	public void mouseClicked(MouseEvent e) 
+		    	{
+		    		if(SwingUtilities.isLeftMouseButton(e) &&  e.getClickCount() == 2)
+		    		{
+		    			if (selected())
+							JvmAttachDialog.this.dispose();      
+		    		}
+		    	}
+		   });
 		
 		TableColumnModel tcm = jvmTable.getColumnModel();
 		TableColumn firstColumn = tcm.getColumn(0); 

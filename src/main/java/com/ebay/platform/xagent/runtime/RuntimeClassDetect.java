@@ -28,6 +28,18 @@ public class RuntimeClassDetect
 		detecteTask.start();
 	}
 	
+	private Class getClassFromInstrumention(String className)
+	{
+		Class[] classes = inst.getAllLoadedClasses();
+		for (Class clz : classes)
+		{
+			if (clz.getName().equals(className) )
+				return clz;
+		}
+		
+		return null;
+	}
+	
 	class DetecteTask extends Thread
 	{
 		public DetecteTask()
@@ -49,7 +61,13 @@ public class RuntimeClassDetect
 		    		List<RuntimeClass> runtimeClasses = AgentUtils.getRuntimeClasses(runtimeDir, classpath);
 					
 					for (RuntimeClass runtimeClass : runtimeClasses)
-			    		inst.redefineClasses(new ClassDefinition(Class.forName(runtimeClass.getClassName().replaceAll("/", ".")), runtimeClass.getClassfileBuffer()));
+					{
+						Class clz = getClassFromInstrumention(runtimeClass.getClassName().replaceAll("/", "."));
+						if (clz != null)
+							inst.redefineClasses(new ClassDefinition(clz, runtimeClass.getClassfileBuffer()));
+						else
+							System.out.println("Can not find the class :" + runtimeClass.getClassName());
+					}
 					
 					Thread.sleep(10000);
 				}

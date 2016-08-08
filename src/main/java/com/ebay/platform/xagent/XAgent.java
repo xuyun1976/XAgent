@@ -2,6 +2,8 @@ package com.ebay.platform.xagent;
 
 
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
@@ -48,29 +50,18 @@ public class XAgent
     
     private static void exec(String args, Instrumentation inst, boolean isAgentmain) throws Exception 
     {
-    	Properties cmd = AgentUtils.parseArgs(args);
+    	XAgentClassLoader xAgentClassLoader = new XAgentClassLoader();
+    	ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+    	Thread.currentThread().setContextClassLoader(xAgentClassLoader);
     	
-    	String cacheMethodFile = cmd.getProperty(AgentConstants.ARG_CACHE_FILE, AgentConstants.DEFAULT_XCACHE_METHOD_FILE);
-    	String classpath = cmd.getProperty(AgentConstants.ARG_CLASSPATH);
+    	Class c = xAgentClassLoader.loadClass("com.ebay.platform.xagent.XAgentServiceImpl");
     	
-    	List<AgentMethod> methods = AgentUtils.getCacheMethods(cacheMethodFile);
-    	MethodCacheTransformer methodCacheTransformer = new MethodCacheTransformer(methods);
+    	Object service = c.getConstructor(String.class, Instrumentation.class, boolean.class).newInstance(args, inst, isAgentmain);
     	
-    	instrumentation = inst;
-    	instrumentation.addTransformer(methodCacheTransformer, true);
+    	Method method = c.getMethod("start", null);
+    	method.invoke(service, null);
     	
-    	String rmiPort = cmd.getProperty(AgentConstants.ARG_RMI_PORT);
-    	if (rmiPort != null)
-    		new AgentRmiServiceImpl(inst, methodCacheTransformer, Integer.valueOf(rmiPort)).start();
-    	
-    	new RuntimeClassDetect(cmd, inst, classpath).apply();
-    	
-    	if (!isAgentmain)
-    		return;
-    	
-    	for (AgentMethod method : methods)
-        	instrumentation.retransformClasses(Class.forName(method.getClassName().replaceAll("/", ".")));
-
+    	Thread.currentThread().setContextClassLoader(oldClassLoader);
     }
 
 }
