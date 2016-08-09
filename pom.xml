@@ -98,7 +98,16 @@
    </dependencies>
    
 	<build>
-	  
+	  <resources>
+		<resource>
+		  <directory>src/main/resources</directory>
+			<excludes>
+			  <exclude>**/*.bat</exclude>
+			  <exclude>**/*.sh</exclude>
+			</excludes>
+		</resource>
+	  </resources>
+		
 	  <plugins>
 		<plugin>  
           <groupId>org.apache.maven.plugins</groupId>  
@@ -113,6 +122,7 @@
 	  	  <artifactId>maven-assembly-plugin</artifactId>
 	  	  <executions>
 	    	<execution>
+	    	  <id>build-xagent-jar</id>
 	      	  <goals>
 	        	<goal>attached</goal>
 	      	  </goals>
@@ -124,7 +134,7 @@
 		        <archive>
 		          <manifest>
 		            <mainClass>com.ebay.platform.xagent.gui.XAgentGuiLauncher</mainClass>
-		           </manifest>
+		          </manifest>
 		          <manifestEntries>
 			        <Premain-Class>com.ebay.platform.xagent.XAgent</Premain-Class>
 			        <Agent-Class>com.ebay.platform.xagent.XAgent</Agent-Class>
@@ -133,6 +143,19 @@
 		          </manifestEntries>
 		        </archive>
 	      	  </configuration>
+	        </execution>
+	        
+	        <execution>
+	    	  <id>build-xagent-bin</id>
+	      	  <goals>
+	        	<goal>attached</goal>
+	      	  </goals>
+	      	  <phase>package</phase>
+	      	  <configuration>
+                <descriptors>
+		          <descriptor>src/main/assembly/zip.xml</descriptor>
+		        </descriptors>
+		      </configuration>
 	        </execution>
 	  	  </executions>
 		</plugin>

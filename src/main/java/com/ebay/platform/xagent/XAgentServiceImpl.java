@@ -1,13 +1,13 @@
 package com.ebay.platform.xagent;
 
 import java.lang.instrument.Instrumentation;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import com.ebay.platform.xagent.cache.AgentMethod;
-import com.ebay.platform.xagent.cache.transformer.MethodCacheTransformer;
-import com.ebay.platform.xagent.rmi.AgentRmiServiceImpl;
-import com.ebay.platform.xagent.runtime.RuntimeClassDetect;
+import com.ebay.platform.xagent.cache.transformer.MethodCacheXAgentService;
+import com.ebay.platform.xagent.rmi.RmiXAgentService;
+import com.ebay.platform.xagent.runtime.RuntimeXAgentService;
 
 public class XAgentServiceImpl implements XAgentService 
 {
@@ -43,32 +43,24 @@ public class XAgentServiceImpl implements XAgentService
 	@Override
 	public void start() throws Exception
 	{
-    	Properties cmd = AgentUtils.parseArgs(args);
-    	
-    	String cacheMethodFile = cmd.getProperty(AgentConstants.ARG_CACHE_FILE, AgentConstants.DEFAULT_XCACHE_METHOD_FILE);
-    	String classpath = cmd.getProperty(AgentConstants.ARG_CLASSPATH);
-    	
-    	List<AgentMethod> methods = AgentUtils.getCacheMethods(cacheMethodFile);
-    	MethodCacheTransformer methodCacheTransformer = new MethodCacheTransformer(methods);
-    	
-    	System.out.println(methodCacheTransformer.getClass().getClassLoader());
-    	
-    	inst.addTransformer(methodCacheTransformer, true);
-    	
-    	String rmiPort = cmd.getProperty(AgentConstants.ARG_RMI_PORT);
-    	if (rmiPort != null)
-    		new AgentRmiServiceImpl(inst, methodCacheTransformer, Integer.valueOf(rmiPort)).start();
-    	
-    	new RuntimeClassDetect(cmd, inst, classpath).apply();
-    	
-    	if (!isAgentmain)
-    		return;
-    	
-    	for (AgentMethod method : methods)
-    		inst.retransformClasses(Class.forName(method.getClassName().replaceAll("/", ".")));
+		Properties p = new Properties();
+		p.load(this.getClass().getClassLoader().getResourceAsStream("xagent.properties"));
 		
+		String xagentServices = p.getProperty("xagent.services");
+		if (xagentServices == null)
+			return;
+		
+		String[] serviceClasses = xagentServices.split(";");
+		
+		for (String serviceClass : serviceClasses)
+		{
+			 XAgentService service = (XAgentService)Class.forName(serviceClass).getConstructor(new Class[]{}).newInstance();
+			
+			service.setArgs(args);
+			service.setInstrumentation(inst);
+			service.setAgentmain(isAgentmain);
+			
+			service.start();
+		}
 	}
-
-
-	
 }

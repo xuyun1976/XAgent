@@ -28,11 +28,6 @@ public class MethodCacheTransformer implements ClassFileTransformer
 {
 	protected List<AgentMethod> methods = new ArrayList<AgentMethod>();
 
-	public MethodCacheTransformer(List<AgentMethod> methods)
-	{
-		this.methods = methods;
-	}
-
 	public void setMethods(List<AgentMethod> methods) {
 		this.methods = methods;
 	}
@@ -585,7 +580,8 @@ public class MethodCacheTransformer implements ClassFileTransformer
     	String cacheMethodFile = cmd.getProperty(AgentConstants.ARG_CACHE_FILE, AgentConstants.DEFAULT_XCACHE_METHOD_FILE);
     	List<AgentMethod> methods = AgentUtils.getCacheMethods(cacheMethodFile);//new ArrayList<Method>();//
 
-		MethodCacheTransformer aa = new MethodCacheTransformer(methods);
+		MethodCacheTransformer aa = new MethodCacheTransformer();
+		aa.setMethods(methods);
 		aa.transform(null, "com/ebay/platform/cache/MyUser1", null, null, null);
 	}
 

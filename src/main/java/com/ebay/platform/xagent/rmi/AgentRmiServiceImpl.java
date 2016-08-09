@@ -27,12 +27,12 @@ public class AgentRmiServiceImpl extends UnicastRemoteObject implements AgentRmi
 	private MethodCacheTransformer methodCacheTransformer;
 	private int port;
 	
-	public AgentRmiServiceImpl(Instrumentation inst, MethodCacheTransformer methodCacheTransformer, int port) throws RemoteException 
+	public AgentRmiServiceImpl(Instrumentation inst, int port) throws RemoteException 
 	{
 		super();
 		
 		this.inst = inst;
-		this.methodCacheTransformer = methodCacheTransformer;
+		this.methodCacheTransformer = new MethodCacheTransformer();
 		this.port = port;
 	}
 
@@ -174,12 +174,12 @@ public class AgentRmiServiceImpl extends UnicastRemoteObject implements AgentRmi
 			
 			Map<String, byte[]> classMap = getClassfileBuffer(className);
 			
-			Class c = Class.forName(className);
+			Class clz = AgentUtils.getClassFromInstrumention(inst, className);
 			
 			methodCacheTransformer.setMethods(Arrays.asList(new AgentMethod[]{new AgentMethod(classPath, method.getMethodName())}));
-			byte[] buffer = methodCacheTransformer.transform(c.getClassLoader(), classPath, null, c.getProtectionDomain(), classMap.get(classKey));
+			byte[] buffer = methodCacheTransformer.transform(clz.getClassLoader(), classPath, null, clz.getProtectionDomain(), classMap.get(classKey));
 			
-			inst.redefineClasses(new ClassDefinition(c, buffer));
+			inst.redefineClasses(new ClassDefinition(clz, buffer));
 			
 		}
 		catch(Exception ex)

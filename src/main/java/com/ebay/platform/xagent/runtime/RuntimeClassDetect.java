@@ -28,18 +28,6 @@ public class RuntimeClassDetect
 		detecteTask.start();
 	}
 	
-	private Class getClassFromInstrumention(String className)
-	{
-		Class[] classes = inst.getAllLoadedClasses();
-		for (Class clz : classes)
-		{
-			if (clz.getName().equals(className) )
-				return clz;
-		}
-		
-		return null;
-	}
-	
 	class DetecteTask extends Thread
 	{
 		public DetecteTask()
@@ -47,6 +35,7 @@ public class RuntimeClassDetect
 			this.setDaemon(true);
 		}
 		
+		@SuppressWarnings("rawtypes")
 		@Override
 		public void run() 
 		{
@@ -62,7 +51,7 @@ public class RuntimeClassDetect
 					
 					for (RuntimeClass runtimeClass : runtimeClasses)
 					{
-						Class clz = getClassFromInstrumention(runtimeClass.getClassName().replaceAll("/", "."));
+						Class clz = AgentUtils.getClassFromInstrumention(inst, runtimeClass.getClassName().replaceAll("/", "."));
 						if (clz != null)
 							inst.redefineClasses(new ClassDefinition(clz, runtimeClass.getClassfileBuffer()));
 						else

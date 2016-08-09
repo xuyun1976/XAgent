@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.instrument.Instrumentation;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,9 +62,15 @@ public class AgentUtils
 	    
 	    try 
 	    {
-	    	InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName);
+	    	ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	    	InputStream is = classLoader.getResourceAsStream(fileName);
 	    	if (is == null)
-	    		return contents;
+	    	{
+	    		classLoader = classLoader.getClass().getClassLoader();
+	    		is = classLoader.getResourceAsStream(fileName);
+	    		if (is == null)
+	    			return contents;
+	    	}
 	    	
 	        reader = new BufferedReader(new InputStreamReader(is));
 	        
@@ -393,6 +400,19 @@ public class AgentUtils
 		{
 			ex.printStackTrace();
 		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static Class getClassFromInstrumention(Instrumentation inst, String className)
+	{
+		Class[] classes = inst.getAllLoadedClasses();
+		for (Class clz : classes)
+		{
+			if (clz.getName().equals(className) )
+				return clz;
+		}
+		
+		return null;
 	}
 	
 	public static void main(String[] args) throws Exception

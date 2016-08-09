@@ -3,19 +3,10 @@ package com.ebay.platform.xagent;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.List;
-import java.util.Properties;
 
-import com.ebay.platform.xagent.cache.AgentMethod;
-import com.ebay.platform.xagent.cache.transformer.MethodCacheTransformer;
-import com.ebay.platform.xagent.rmi.AgentRmiServiceImpl;
-import com.ebay.platform.xagent.runtime.RuntimeClassDetect;
 
 public class XAgent 
 {
-	private static Instrumentation instrumentation;
-
     /**
      * JVM hook to statically load the javaagent at startup.
      * 
@@ -48,18 +39,19 @@ public class XAgent
         exec(args, inst, true);
     }
     
-    private static void exec(String args, Instrumentation inst, boolean isAgentmain) throws Exception 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	private static void exec(String args, Instrumentation inst, boolean isAgentmain) throws Exception 
     {
-    	XAgentClassLoader xAgentClassLoader = new XAgentClassLoader();
     	ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+    	XAgentClassLoader xAgentClassLoader = new XAgentClassLoader();
     	Thread.currentThread().setContextClassLoader(xAgentClassLoader);
     	
     	Class c = xAgentClassLoader.loadClass("com.ebay.platform.xagent.XAgentServiceImpl");
     	
     	Object service = c.getConstructor(String.class, Instrumentation.class, boolean.class).newInstance(args, inst, isAgentmain);
     	
-    	Method method = c.getMethod("start", null);
-    	method.invoke(service, null);
+    	Method method = c.getMethod("start", new Class[]{});
+    	method.invoke(service, new Object[]{});
     	
     	Thread.currentThread().setContextClassLoader(oldClassLoader);
     }
