@@ -14,6 +14,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.RTextScrollPane;
+
 import com.ebay.platform.xagent.AgentUtils;
 import com.ebay.platform.xagent.rmi.AgentRmiClient;
 import com.ebay.platform.xagent.runtime.decompiler.DecompilerByCFR;
@@ -35,15 +39,34 @@ public class ClassEditorTabbedPanel extends JTabbedPane implements ClassSelected
 		addMouseListener(new MouseListenerImpl());
 	}
 	
+//	public void addClassEditorTab(String simpleClassName, String className)
+//	{
+//		JTextArea classTextArea = new JTextArea();
+//		
+//		JScrollPane listScroller = new JScrollPane(classTextArea);
+//        listScroller.setPreferredSize(new Dimension(400, 80));
+//        
+//        add(listScroller, BorderLayout.CENTER);
+//        addTab(simpleClassName, null, listScroller, className);
+//        
+//        Map<String, byte[]> classMap = agentRmiClient.getClassfileBuffer(className);
+//        
+//        String java = DecompilerByCFR.decompile(classMap);
+//        
+//        classTextArea.setText(java);
+//    }
+	
 	public void addClassEditorTab(String simpleClassName, String className)
 	{
-		JTextArea classTextArea = new JTextArea();
-		
-		JScrollPane listScroller = new JScrollPane(classTextArea);
-        listScroller.setPreferredSize(new Dimension(400, 80));
+		RSyntaxTextArea classTextArea = new RSyntaxTextArea();
+		classTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
+		classTextArea.setCodeFoldingEnabled(true);
+	    RTextScrollPane sp = new RTextScrollPane(classTextArea);
+	      
+	    sp.setPreferredSize(new Dimension(400, 80));
         
-        add(listScroller, BorderLayout.CENTER);
-        addTab(simpleClassName, null, listScroller, className);
+        add(sp, BorderLayout.CENTER);
+        addTab(simpleClassName, null, sp, className);
         
         Map<String, byte[]> classMap = agentRmiClient.getClassfileBuffer(className);
         

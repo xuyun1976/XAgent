@@ -60,6 +60,12 @@
 	  <systemPath>${basedir}/lib/jd-common-0.7.1.jar</systemPath>
     </dependency>
     
+	<dependency>
+      <groupId>com.fifesoft</groupId>
+      <artifactId>rsyntaxtextarea</artifactId>
+      <version>2.5.8</version>
+    </dependency>
+    
     <dependency>
 	  <groupId>org.springframework</groupId>
 	  <artifactId>spring-jdbc</artifactId>
@@ -121,6 +127,7 @@
 	  	  <groupId>org.apache.maven.plugins</groupId>
 	  	  <artifactId>maven-assembly-plugin</artifactId>
 	  	  <executions>
+	  	  
 	    	<execution>
 	    	  <id>build-xagent-jar</id>
 	      	  <goals>
@@ -128,9 +135,14 @@
 	      	  </goals>
 	      	  <phase>package</phase>
 	      	  <configuration>
+	      	    <descriptors>
+		          <descriptor>src/main/assembly/jar.xml</descriptor>
+		        </descriptors>
+		        <!--  
                 <descriptorRefs>
 		          <descriptorRef>jar-with-dependencies</descriptorRef>
 		        </descriptorRefs>
+		        -->
 		        <archive>
 		          <manifest>
 		            <mainClass>com.ebay.platform.xagent.gui.XAgentGuiLauncher</mainClass>
@@ -143,8 +155,8 @@
 		          </manifestEntries>
 		        </archive>
 	      	  </configuration>
+	      	  
 	        </execution>
-	        
 	        <execution>
 	    	  <id>build-xagent-bin</id>
 	      	  <goals>
@@ -157,7 +169,7 @@
 		        </descriptors>
 		      </configuration>
 	        </execution>
-	  	  </executions>
+	      </executions>
 		</plugin>
 	  </plugins>
 	</build>

@@ -9,7 +9,6 @@ import com.ebay.platform.xagent.AgentUtils;
 import com.ebay.platform.xagent.XAgentService;
 import com.ebay.platform.xagent.cache.AgentMethod;
 import com.ebay.platform.xagent.cache.transformer.MethodCacheTransformer;
-import com.ebay.platform.xagent.rmi.AgentRmiServiceImpl;
 
 public class MethodCacheXAgentService implements XAgentService 
 {
@@ -35,6 +34,7 @@ public class MethodCacheXAgentService implements XAgentService
 		this.isAgentmain = isAgentmain;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void start() throws Exception
 	{
@@ -51,8 +51,18 @@ public class MethodCacheXAgentService implements XAgentService
     		return;
     	
     	for (AgentMethod method : methods)
-    		inst.retransformClasses(Class.forName(method.getClassName().replaceAll("/", ".")));
-		
+    	{
+    		try
+    		{
+    			Class clz = AgentUtils.getClassFromInstrumention(inst, method.getClassName().replaceAll("/", "."));
+    			
+    			inst.retransformClasses(clz);
+    		}
+    		catch(Exception ex)
+    		{
+    			ex.printStackTrace();
+    		}
+    	}
 	}
 	
 }

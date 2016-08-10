@@ -63,14 +63,14 @@ public class AgentUtils
 	    try 
 	    {
 	    	ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-	    	InputStream is = classLoader.getResourceAsStream(fileName);
-	    	if (is == null)
-	    	{
+	    	//InputStream is = classLoader.getResourceAsStream(fileName);
+	    	//if (is == null)
+	    	//{
 	    		classLoader = classLoader.getClass().getClassLoader();
-	    		is = classLoader.getResourceAsStream(fileName);
+	    		InputStream is = classLoader.getResourceAsStream(fileName);
 	    		if (is == null)
 	    			return contents;
-	    	}
+	    	//}
 	    	
 	        reader = new BufferedReader(new InputStreamReader(is));
 	        
