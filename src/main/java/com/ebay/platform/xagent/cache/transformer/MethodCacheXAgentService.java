@@ -56,9 +56,12 @@ public class MethodCacheXAgentService implements XAgentService
     		{
     			Class clz = AgentUtils.getClassFromInstrumention(inst, method.getClassName().replaceAll("/", "."));
     			
+    			if (clz == null)
+    				continue;
+    			
     			inst.retransformClasses(clz);
     		}
-    		catch(Exception ex)
+    		catch(Throwable ex)
     		{
     			ex.printStackTrace();
     		}

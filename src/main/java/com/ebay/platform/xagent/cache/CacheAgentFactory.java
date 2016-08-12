@@ -4,12 +4,17 @@ public class CacheAgentFactory
 {
 	public static CacheAgent createDefaultCacheAgent()
 	{
-		return createEhCacheAgent();
+		return createJCSCacheAgent();
 	}
 	
 	public static CacheAgent createEhCacheAgent()
 	{
 		return new EhCacheAgent();
+	}
+	
+	public static CacheAgent createJCSCacheAgent()
+	{
+		return new InfinispanCacheAgent();
 	}
 
 }

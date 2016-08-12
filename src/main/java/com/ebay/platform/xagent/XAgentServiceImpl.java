@@ -1,13 +1,7 @@
 package com.ebay.platform.xagent;
 
 import java.lang.instrument.Instrumentation;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
-
-import com.ebay.platform.xagent.cache.transformer.MethodCacheXAgentService;
-import com.ebay.platform.xagent.rmi.RmiXAgentService;
-import com.ebay.platform.xagent.runtime.RuntimeXAgentService;
 
 public class XAgentServiceImpl implements XAgentService 
 {
@@ -54,13 +48,20 @@ public class XAgentServiceImpl implements XAgentService
 		
 		for (String serviceClass : serviceClasses)
 		{
-			 XAgentService service = (XAgentService)Class.forName(serviceClass).getConstructor(new Class[]{}).newInstance();
+			try
+			{
+				XAgentService service = (XAgentService)Class.forName(serviceClass).getConstructor(new Class[]{}).newInstance();
 			
-			service.setArgs(args);
-			service.setInstrumentation(inst);
-			service.setAgentmain(isAgentmain);
-			
-			service.start();
+			 	service.setArgs(args);
+				service.setInstrumentation(inst);
+				service.setAgentmain(isAgentmain);
+				
+				service.start();
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
 		}
 	}
 }
