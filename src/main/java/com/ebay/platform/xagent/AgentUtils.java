@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -392,9 +393,31 @@ public class AgentUtils
 		{
 			VirtualMachine vm = VirtualMachine.attach(vmd);
 			
-			System.out.println(AgentUtils.class.getProtectionDomain().getCodeSource().getLocation());
+			File agentJarFile = new File(AgentUtils.class.getProtectionDomain().getCodeSource().getLocation().getFile());
 			
-			vm.loadAgent(AgentConstants.jarFilePath, options);
+			if (agentJarFile.isDirectory())
+			{
+				File[] files = agentJarFile.getParentFile().listFiles(new FilenameFilter()
+				{
+					@Override
+					public boolean accept(File dir, String name) 
+					{
+						if (name.equals(AgentConstants.agentFileName))
+							return true;
+						
+						return false;
+					}
+					
+				});
+				
+				if (files.length > 0)
+					agentJarFile = files[0];
+			}
+			
+				
+			System.out.println(agentJarFile.getAbsolutePath());
+			
+			vm.loadAgent(agentJarFile.getAbsolutePath(), options);
 		}
 		catch(Exception ex)
 		{

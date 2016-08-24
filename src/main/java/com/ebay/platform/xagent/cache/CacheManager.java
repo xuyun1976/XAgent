@@ -16,6 +16,10 @@ public class CacheManager
 	{
 		xstream.setMode(XStream.NO_REFERENCES);
 		
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    	classLoader = classLoader.getClass().getClassLoader();
+		xstream.setClassLoader(classLoader);
+		
 		Runtime.getRuntime().addShutdownHook(new Thread()
 			{
 				public void run()

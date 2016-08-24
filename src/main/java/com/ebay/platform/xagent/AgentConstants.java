@@ -31,6 +31,6 @@ public final class AgentConstants
 	
 	public static final String[] EXCLUDE_CLASS_NAMES = new String[]{"[", "java.", "javax.", "com.sun.", "jdk.", "sun."};
 	
-	public static final String jarFilePath = "C:\\GitHub\\XAgent\\target\\XAgent-0.0.1-SNAPSHOT-jar-with-dependencies.jar";
+	public static final String agentFileName = "XAgent-0.0.1-SNAPSHOT-jar-with-dependencies.jar";
 
 }
